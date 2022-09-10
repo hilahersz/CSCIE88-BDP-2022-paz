@@ -20,9 +20,6 @@ DistinctUrl = namedtuple('DistinctUrl', ['key', 'url'])
 DistinctUser = namedtuple('DistinctUser', ['key', 'user'])
 DistinctUuid = namedtuple('DistinctUuid', ['key', 'uuid'])
 
-COLUMNS = ['uuid', 'timestamp', 'url', 'userid', 'country',
-           'ua_browser', 'ua_os', 'response_status', 'TTFB']
-
 Q1_KEYS = ["2022-09-04:07",
            "2022-09-04:08",
            "2022-09-04:09",
