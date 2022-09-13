@@ -1,5 +1,4 @@
 import logging
-import logging
 import multiprocessing
 from collections import namedtuple
 from itertools import groupby
