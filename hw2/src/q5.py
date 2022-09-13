@@ -54,7 +54,7 @@ def get_distinct_tuples(shared_counter: Value,
                         path: str,
                         ) -> None:
     """
-    A method to generate TtfbInfo tuples from a desired file
+    A method to generate distinct country and hours tuples from a desired file
     Args:
         shared_counter: a shared counter among threads
         shared_list: a shared list of events among threads
@@ -84,11 +84,11 @@ def get_distinct_tuples(shared_counter: Value,
 
 def map_event_to_distinct_country_url(line):
     """
-    A method to parse an event to a date, url and TTFB tuple
+    A method to parse an event to an hour, url and country tuple
     Args:
         line: a single csv file with Event arguments expected
 
-    Returns: parsed DistinctTtfb tuple with a date, url and TTFB
+    Returns: parsed DistinctCountry tuple with an hour, url and country tuple
 
     """
     event = Event(*line.split(','))
