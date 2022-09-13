@@ -71,7 +71,7 @@ def execute_q6() -> None:
     """
     A custom method to execute query 6 - get top 5 urls per day by lowest ttfb rate
     """
-    logger.info("calculating Q1 for question 3")
+    logger.info("calculating Q5 for question 6")
     thread_count, logs_dir = parse_args()
 
     with multiprocessing.Manager() as manager:

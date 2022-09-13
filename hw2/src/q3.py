@@ -148,7 +148,7 @@ def execute_query(method: callable,
         method: the required method to aggregate by
         answer_key: [Optional], which answer keys to print
     """
-    logger.info("calculating Q1 for question 3")
+    logger.info("calculating queries question 3", extra={"method": method.__name__})
     thread_count, logs_dir = parse_args()
 
     with multiprocessing.Manager() as manager:
