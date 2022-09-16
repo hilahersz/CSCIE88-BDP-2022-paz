@@ -11,10 +11,19 @@ to decrease the number of calls to Redis. However, in this approach - the shared
 '''
 import argparse
 from collections import namedtuple
+
+import dateutil.parser
 import redis
+
+
+HOUR_PATTERN = "%Y-%m-%d:%H"
+
 
 event_fields = ['uuid', 'timestamp', 'url', 'userid', 'country', 'ua_browser', 'ua_os', 'response_status', 'TTFB']
 Event = namedtuple('Event', event_fields)
+DistinctUrl = namedtuple('DistinctUrl', ['key', 'url'])
+DistinctUser = namedtuple('DistinctUser', ['key', 'user'])
+DistinctUuid = namedtuple('DistinctUuid', ['key', 'uuid'])
 
 
 def parse_arguments():
@@ -25,7 +34,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(prog=prog, description=desc)
     # name of a simple String field in Redis - that will be use as a shared counter
     parser.add_argument('--redis_counter_name', '-rc', required=False, default="counter")
-    parser.add_argument('--file_name', '-f', required=False, default="../logs/file-input1.csv",
+    parser.add_argument('--file_name', '-f', required=False, default="src/logs/file-input1.csv",
                         help="a csv log file to process")
     parser.add_argument('--redis_url', '-ru', required=False, default="redis://localhost:6379",
                         help="Redis end point url; Eg: redis://localhost:6379")
@@ -36,18 +45,24 @@ def parse_arguments():
 
 def do_work(redis_url, redis_counter_name, file_name):
     redis_client = redis.Redis.from_url(redis_url)
-    event_count = 0
     # set initial value of the redis counter to 0 - if the counter does not exits yet
-    #   (was not set by some other thread or app)
+    event_count = 0
+
     redis_client.setnx(redis_counter_name, 0)
-    with open(file_name) as file_handle:
-        events = map(parse_line, file_handle)
-        for event in events:
+
+    with open(file_name) as f:
+        file_handle = list(f)
+        url_events = list(map(map_event_to_distinct_url, file_handle))
+        user_events = list(map(map_event_to_distinct_user, file_handle))
+        uuid_events = list(map(map_event_to_distinct_uuid, file_handle))
+        for i, e in enumerate(url_events):
             if event_count % 1000 == 0:
                 print(f"processing event #{event_count} ... ")
             event_count += 1
-            # increment Redis counter by 1
             redis_client.incr(redis_counter_name)
+            redis_client.sadd(e.key, e.url)
+            redis_client.sadd(user_events[i].key, user_events[i].user)
+            redis_client.sadd(uuid_events[i].key, uuid_events[i].uuid)
 
         shared_counter = redis_client.get(redis_counter_name)
         print(f"processing of {file_name} has finished processing with local event_count={event_count}, "
@@ -56,8 +71,47 @@ def do_work(redis_url, redis_counter_name, file_name):
     redis_client.close()
 
 
-def parse_line(line):
-    return Event(*line.split(','))
+def map_event_to_distinct_url(line):
+    """
+    A method to parse an event to an hour, url tuple
+    Args:
+        line: a single csv file with Event arguments expected
+
+    Returns: parsed DistinctUrl tuple with hour and url
+
+    """
+    event = Event(*line.split(','))
+    ts = dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN)
+    return DistinctUrl(ts, event.url)
+
+
+def map_event_to_distinct_user(line):
+    """
+    A method to parse an event to an hour, url, userid tuple
+    Args:
+        line: a single csv file with Event arguments expected
+
+    Returns: parsed DistinctUser tuple with hour, url and userid
+
+    """
+    event = Event(*line.split(','))
+    key = dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + " , " + event.url
+    return DistinctUser(key, event.userid)
+
+
+def map_event_to_distinct_uuid(line):
+    """
+    A method to parse an event to an hour, url, uuid tuple
+    Args:
+        line: a single csv file with Event arguments expected
+
+    Returns: parsed DistinctUser tuple with hour, url and uuid
+
+    """
+    event = Event(*line.split(','))
+    key = dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + " , " + event.url
+    return DistinctUuid(key, event.uuid)
+
 
 
 def main():
