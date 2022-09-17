@@ -26,7 +26,14 @@ DistinctUser = namedtuple('DistinctUser', ['key', 'user'])
 DistinctUuid = namedtuple('DistinctUuid', ['key', 'uuid'])
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
+    """
+    A method to parse arguments for q1. all arguments have default values
+    Returns: a parsed_argument object with the following attributes:
+        redis_counter_name: a name to the redis counter
+        file_name: a data file (.csv) with data to process
+        redis_url: where to locate the redis server
+    """
     prog = "counter_process_redis"
     desc = "application that reads a file, parses all lines, counts the lines and " \
            "stores/increments the counter maintained in Redis"
@@ -43,7 +50,14 @@ def parse_arguments():
     return parsed_args
 
 
-def do_work(redis_url, redis_counter_name, file_name):
+def do_work(redis_url, redis_counter_name, file_name) -> None:
+    """
+    A method to store unique url, users, and uuid per hour in a redis set.
+    Args:
+        redis_url: The url path to redis host
+        redis_counter_name: counter to be updated
+        file_name: path of the file to be processed
+    """
     redis_client = redis.Redis.from_url(redis_url)
     # set initial value of the redis counter to 0 - if the counter does not exits yet
     event_count = 0
@@ -113,7 +127,11 @@ def map_event_to_distinct_uuid(line):
     return DistinctUuid(key, event.uuid)
 
 
-def main():
+def main() -> None:
+    """
+    A wrapper method to process a .csv file to unique set of url, users and uuid per required key
+    As specified in queries 1,2,3
+    """
     parsed_args = parse_arguments()
     redis_counter_name = parsed_args.redis_counter_name
     file_name = parsed_args.file_name
@@ -123,4 +141,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
