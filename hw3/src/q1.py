@@ -95,7 +95,7 @@ def map_event_to_distinct_user(line):
 
     """
     event = Event(*line.split(','))
-    key = dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + " , " + event.url
+    key = "user" + dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + ":" + event.url
     return DistinctUser(key, event.userid)
 
 
@@ -109,9 +109,8 @@ def map_event_to_distinct_uuid(line):
 
     """
     event = Event(*line.split(','))
-    key = dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + " , " + event.url
+    key = "uuid" + dateutil.parser.parse(event.timestamp).strftime(HOUR_PATTERN) + ":" + event.url
     return DistinctUuid(key, event.uuid)
-
 
 
 def main():
