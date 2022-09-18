@@ -19,7 +19,7 @@ def parse_arguments() -> argparse.Namespace:
     # name of a simple String field in Redis - that will be use as a shared counter
     parser.add_argument('--redis_counter_name', '-rc', required=False, default="counter")
     parser.add_argument('--file_path', '-f', required=False, default="src/logs",
-                        help="a csv log file to process")
+                        help="a path with csv log files to process")
     parser.add_argument('--redis_url', '-ru', required=False, default="redis://localhost:6379",
                         help="Redis end point url; Eg: redis://localhost:6379")
 
