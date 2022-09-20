@@ -32,19 +32,49 @@ def parse_arguments() -> argparse.Namespace:
     Returns: a parsed_argument object with the following attributes:
         redis_counter_name: a name to the redis counter
         file_name: a data file (.csv) with data to process
+        file_path: a data folder with all .csv files to process
         redis_url: where to locate the redis server
+        start: when to start printing hours and country combinations
+        end: when to stop printing hours and country combinations
     """
-    prog = "counter_process_redis"
     desc = "application that reads a file, parses all lines, counts the lines and " \
            "stores/increments the counter maintained in Redis"
 
-    parser = argparse.ArgumentParser(prog=prog, description=desc)
-    # name of a simple String field in Redis - that will be use as a shared counter
-    parser.add_argument('--redis_counter_name', '-rc', required=False, default="counter")
-    parser.add_argument('--file_name', '-f', required=False, default="src/logs/file-input1.csv",
+    parser = argparse.ArgumentParser(prog="counter_process_redis", description=desc)
+
+    parser.add_argument('--redis_counter_name',
+                        '-rc',
+                        required=False,
+                        default="counter")
+
+    parser.add_argument('--file_name',
+                        '-f',
+                        required=False,
+                        default="src/logs/file-input1.csv",
                         help="a csv log file to process")
-    parser.add_argument('--redis_url', '-ru', required=False, default="redis://localhost:6379",
+
+    parser.add_argument('--redis_url',
+                        '-ru',
+                        required=False,
+                        default="redis://localhost:6379",
                         help="Redis end point url; Eg: redis://localhost:6379")
+
+    parser.add_argument('--start',
+                        '-s',
+                        required=False,
+                        default="2022-09-04 2 AM UTC",
+                        help="start time")
+
+    parser.add_argument('--end',
+                        '-e',
+                        required=False,
+                        default="2022-09-05 10 PM UTC",
+                        help="end time")
+
+    parser.add_argument('--file_path',
+                        '-fp',
+                        required=False, default="src/logs",
+                        help="a path with csv log files to process")
 
     parsed_args = parser.parse_args()
     return parsed_args
