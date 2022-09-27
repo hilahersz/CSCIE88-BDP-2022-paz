@@ -165,3 +165,7 @@ dmypy.json
 cython_debug/
 
 redis-dumps/
+
+pset0.pem
+.junk.py
+*.txt
