@@ -34,6 +34,20 @@ dependencies {
     // dependencies for Hadoop MR client
     implementation group: 'org.apache.hadoop', name: 'hadoop-client', version: '3.3.4'
 
+    // dependencies for Spark and Avro
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-avro
+    implementation group: 'org.apache.spark', name: 'spark-avro_2.12', version: '3.1.2'
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-core
+    implementation group: 'org.apache.spark', name: 'spark-core_2.12', version: '3.1.2'
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
+    implementation group: 'org.apache.spark', name: 'spark-sql_2.12', version: '3.1.2'
+
+    // dependencies for HBase
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
+    implementation group: 'org.apache.hbase', name: 'hbase', version: '2.4.4'
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-sql
+    implementation group: 'org.apache.hbase', name: 'hbase-client', version: '2.4.4'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
@@ -43,9 +57,10 @@ test {
 }
 
 jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude ("config")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    zip64 true
+    exclude 'META-INF/*.DSA'
 
     manifest {
         attributes(
@@ -55,8 +70,9 @@ jar {
         )
     }
     from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
+
 }
 
 run {
