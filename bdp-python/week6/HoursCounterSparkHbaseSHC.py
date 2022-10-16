@@ -1,11 +1,11 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from json import loads
 
-import glob
+ss = SparkSession.builder.appName("lab6").getOrCreate()  # spark session
+# df = ss.read.format("avro").load("s3://hila-hw6/file-input-avro")  # load avro files
+# df = ss.read.format("avro").load("s3://hila-hw6/file-input-avro")  # load avro files
+df = ss.read.csv('sample_data')
 
-ss = SparkSession.builder.appName("lab6").getOrCreate() # spark session
-df = ss.read.format("avro").load("s3://e88-data/file-input-avro") #load avro files
 
 def getDateHourUrl(file_line):
     datetime = file_line[1]
@@ -14,20 +14,22 @@ def getDateHourUrl(file_line):
     key = datetime_hour + ':' + url
     return key
 
+
 # Get the unique url counts
-counts_unique_urls = df.rdd\
-    .map(getDateHourUrl)\
-    .distinct()\
-    .map(lambda key: (key.split(":")[0], 1))\
+counts_unique_urls = df.rdd \
+    .map(getDateHourUrl) \
+    .distinct() \
+    .map(lambda key: (key.split(":")[0], 1)) \
     .reduceByKey(lambda a, b: a + b).collect()
 
-#defining schema for DF
-schema = StructType([StructField("datetime_hour", StringType(),
-True),StructField("count_unique_url", IntegerType(), True)])
-counts_unique_urls = ss.createDataFrame(counts_unique_urls, schema) # create Dataframe
+# defining schema for DF
+schema = StructType([
+    StructField("datetime_hour", StringType(), True),
+    StructField("count_unique_url", IntegerType(), True)])
+counts_unique_urls = ss.createDataFrame(counts_unique_urls, schema)  # create Dataframe
 counts_unique_urls.show()
 
-#define catalog for hbase table - maps the schema from Apache Spark to Apache HBase.
+# define catalog for hbase table - maps the schema from Apache Spark to Apache HBase.
 catalog = ''.join("""{
 "table":{"namespace":"lab6", "name":"date_hour"},
 "rowkey":"key",
@@ -37,12 +39,11 @@ catalog = ''.join("""{
 }
 }""".split())
 
-#write to hbase
+# write to hbase
 counts_unique_urls.write \
-.options(catalog=catalog,newtable=5) \
-.format('org.apache.spark.sql.execution.datasources.hbase') \
-.mode("overwrite") \
-.save()
+    .options(catalog=catalog, newtable=5) \
+    .format('org.apache.spark.sql.execution.datasources.hbase') \
+    .mode("overwrite") \
+    .save()
 
 ss.stop()
-
